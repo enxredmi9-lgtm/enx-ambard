@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oliy Matematika — Yakuniy Sessiya</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --card: #111827;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --green: #10b981;
+    --yellow: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0f1f3d 50%, #0a0e1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 400px; height: 160px;
+    background: radial-gradient(ellipse, rgba(0,212,255,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header h1 {
+    font-size: clamp(20px, 4vw, 36px);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #fff;
+  }
+  header h1 span { color: var(--accent); }
+  header p { color: var(--muted); font-size: 14px; margin-top: 6px; }
+
+  /* SEARCH + FILTER */
+  .controls {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+  }
+  .search-box input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    width: 100%;
+  }
+  .search-box span { color: var(--muted); font-size: 14px; }
+  .filter-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .stats {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .stats b { color: var(--accent); }
+
+  /* MAIN LAYOUT */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  /* TOPIC GROUPS */
+  .topic-group { margin-bottom: 32px; }
+  .topic-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+  .topic-header h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .topic-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* QUESTION CARD */
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .q-card:hover { border-color: #2a4060; }
+  .q-card.open { border-color: var(--accent); }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .q-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    min-width: 32px;
+    margin-top: 2px;
+  }
+  .q-card.open .q-num { color: var(--accent); }
+  .q-title {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .q-arrow {
+    color: var(--muted);
+    font-size: 18px;
+    transition: transform 0.25s;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+  .q-card.open .q-arrow { transform: rotate(90deg); color: var(--accent); }
+
+  /* SOLUTION PANEL */
+  .q-solution {
+    display: none;
+    padding: 0 16px 16px 60px;
+    border-top: 1px solid var(--border);
+    background: rgba(0,212,255,0.02);
+  }
+  .q-card.open .q-solution { display: block; }
+  .q-solution .intro {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 12px 0 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .sol-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .sol-block p { font-size: 14px; line-height: 1.7; color: #cbd5e1; }
+  .sol-block p + p { margin-top: 8px; }
+  .sol-block .formula {
+    background: #0d1b2e;
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    overflow-x: auto;
+  }
+  .example-box {
+    background: rgba(16,185,129,0.06);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 8px;
+  }
+  .example-box .ex-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .example-box p { font-size: 13px; color: #a7f3d0; line-height: 1.6; }
+  .tip-box {
+    background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #fcd34d;
+  }
+  .tip-box::before { content: '💡 '; }
+
+  /* HIDDEN */
+  .q-card.hidden { display: none; }
+
+  /* PROGRESS */
+  .progress-bar {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%; height: 3px;
+    background: var(--border);
+    z-index: 200;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.3s;
+  }
+
+  /* SCROLL TOP */
+  .scroll-top {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    width: 40px; height: 40px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+    box-shadow: 0 4px 16px rgba(0,212,255,0.3);
+  }
+  .scroll-top.visible { display: flex; }
+
+  @media (max-width: 600px) {
+    .q-solution { padding-left: 16px; }
+    .controls { padding: 10px 12px; }
+    main { padding: 16px 10px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Oliy Matematika <span>Sessiya</span> Tayyorgarligi</h1>
+  <p>100 ta savol — qisqa yechimlar va misollar bilan</p>
+</header>
+
+<div class="controls">
+  <div class="search-box">
+    <span>🔍</span>
+    <input type="text" id="searchInput" placeholder="Savol qidiring...">
+  </div>
+  <div class="filter-btns" id="filterBtns">
+    <button class="filter-btn active" data-topic="all">Barchasi</button>
+    <button class="filter-btn" data-topic="integral">Integral</button>
+    <button class="filter-btn" data-topic="dt">Diff. tenglamalar</button>
+    <button class="filter-btn" data-topic="qator">Qatorlar</button>
+    <button class="filter-btn" data-topic="kop">Ko'p o'zg. funk.</button>
+    <button class="filter-btn" data-topic="karrali">Karrali integral</button>
+  </div>
+  <div class="stats">Ko'rsatilmoqda: <b id="visibleCount">100</b>/100</div>
+</div>
+
+<main id="mainContent"></main>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+const questions = [
+  // ===== BOSHLANG'ICH FUNKSIYA VA ANIQMAS INTEGRAL =====
+  { id:1, topic:"integral", title:"Boshlang'ich funksiyalar haqida umumiy qoidalarni keltiring.",
+    sol:`<p>Agar F'(x) = f(x) bo'lsa, F(x) — f(x) ning <b>boshlang'ich funksiyasi</b>.</p>
+    <div class="formula">F'(x) = f(x) ⟹ F(x) + C ham boshlang'ich funksiya</div>
+    <p>C — ixtiyoriy o'zgarmas son. Bir funksiyaning barcha boshlang'ich funksiyalari bir-biridan doimiy son (C) ga farq qiladi.</p>
+    <div class="example-box"><div class="ex-label">Misol</div><p>f(x) = 2x uchun F(x) = x² + C (chunki (x²+C)' = 2x ✓)</p></div>` },
+
+  { id:2, topic:"integral", title:"Aniqmas integral va uning xossalarini izohlang.",
+    sol:`<p>Aniqmas integral — f(x) ning barcha boshlang'ich funksiyalari to'plami:</p>
+    <div class="formula">∫f(x)dx = F(x) + C</div>
+    <p><b>Asosiy xossalari:</b></p>
+    <div class="formula">1) (∫f(x)dx)' = f(x)
+2) ∫f'(x)dx = f(x) + C
+3) ∫[f(x) ± g(x)]dx = ∫f(x)dx ± ∫g(x)dx
+4) ∫k·f(x)dx = k·∫f(x)dx</div>
+    <div class="tip-box">Differensial va integral bir-biriga teskari amallar.</div>` },
+
+  { id:3, topic:"integral", title:"Aniqmas integralning xossalarini izohlang.",
+    sol:`<p>Integralning asosiy xossalari (kengaytirilgan):</p>
+    <div class="formula">∫[af(x) + bg(x)]dx = a∫f(x)dx + b∫g(x)dx  (chiziqlilik)
+∫f(x)dx ning hosilasi = f(x)
+∫df(x) = f(x) + C</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫(3x² + 2x)dx = 3·(x³/3) + 2·(x²/2) + C = x³ + x² + C</p></div>` },
+
+  { id:4, topic:"integral", title:"Integrallar jadvali misollar yordamida yozing.",
+    sol:`<p>Asosiy integrallar jadvali:</p>
+    <div class="formula">∫xⁿdx = xⁿ⁺¹/(n+1) + C,  n ≠ -1
+∫(1/x)dx = ln|x| + C
+∫eˣdx = eˣ + C
+∫aˣdx = aˣ/ln(a) + C
+∫sin(x)dx = -cos(x) + C
+∫cos(x)dx = sin(x) + C
+∫(1/cos²x)dx = tan(x) + C
+∫(1/sin²x)dx = -cot(x) + C
+∫(1/√(1-x²))dx = arcsin(x) + C
+∫(1/(1+x²))dx = arctan(x) + C</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫x³dx = x⁴/4 + C; &nbsp;&nbsp; ∫cos(x)dx = sin(x) + C</p></div>` },
+
+  { id:5, topic:"integral", title:"O'zgaruvchini almashtirish va bo'laklab integrallash qoidalari.",
+    sol:`<p><b>1) O'zgaruvchini almashtirish (substitusiya):</b></p>
+    <div class="formula">∫f(g(x))·g'(x)dx = ∫f(t)dt,  t = g(x)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫2x·cos(x²)dx: t=x², dt=2xdx → ∫cos(t)dt = sin(t)+C = sin(x²)+C</p></div>
+    <p><b>2) Bo'laklab integrallash:</b></p>
+    <div class="formula">∫u·dv = u·v - ∫v·du</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫x·eˣdx: u=x, dv=eˣdx → du=dx, v=eˣ<br>= x·eˣ - ∫eˣdx = x·eˣ - eˣ + C = eˣ(x-1) + C</p></div>
+    <div class="tip-box">Bo'laklab integrallash uchun: "LIATE" tartibini yodlang — Log, Inverse trig, Algebraic, Trig, Exponential.</div>` },
+
+  { id:6, topic:"integral", title:"Eng sodda kasrlarni integrallashni izohlang.",
+    sol:`<p>Eng sodda kasrlar 4 turi va ularning integrallari:</p>
+    <div class="formula">∫A/(x-a) dx = A·ln|x-a| + C
+
+∫A/(x-a)ⁿ dx = A·(x-a)^(-n+1)/(-n+1) + C
+
+∫(Ax+B)/(x²+px+q) dx  — ajratish usuli
+
+∫(Ax+B)/(x²+px+q)ⁿ dx  — rekurrent formula</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫3/(x-2)dx = 3·ln|x-2| + C</p></div>` },
+
+  { id:7, topic:"integral", title:"Ratsional kasrlarni sodda kasrlarga ajratish.",
+    sol:`<p>P(x)/Q(x) ni integrallash uchun avval sodda kasrlarga ajratamiz:</p>
+    <div class="formula">Q(x) = (x-a)ᵏ·(x²+px+q)ᵐ·... bo'lsa:
+
+P(x)/Q(x) = A₁/(x-a) + A₂/(x-a)² + ... + Aₖ/(x-a)ᵏ
+           + (B₁x+C₁)/(x²+px+q) + ...</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>(x+1)/((x-1)(x+2)) = A/(x-1) + B/(x+2)<br>x+1 = A(x+2) + B(x-1)<br>x=1: 2=3A → A=2/3; x=-2: -1=-3B → B=1/3</p></div>` },
+
+  { id:8, topic:"integral", title:"Rasional funksiyalarni integrallash.",
+    sol:`<p>Algoritm:</p>
+    <div class="formula">1) Agar daraja(P) ≥ daraja(Q) → bo'lish
+2) Q(x) ni ko'paytuvchilarga ajrat
+3) Sodda kasrlarga yoz
+4) Har birini integrallar</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫(2x+1)/((x-1)(x+2))dx:<br>= ∫(1/(x-1) + 1/(x+2))dx<br>= ln|x-1| + ln|x+2| + C</p></div>` },
+
+  { id:9, topic:"integral", title:"Trigonometrik funksiyalar qatnashgan ifodalarni integrallash.",
+    sol:`<p>Asosiy usullar:</p>
+    <div class="formula">∫sinⁿ(x)cosᵐ(x)dx:
+- n toq: sin(x)=t qo'y
+- m toq: cos(x)=t qo'y
+- ikkalasi juft: ikki burchak formulalari ishlat
+
+sin²x = (1-cos2x)/2
+cos²x = (1+cos2x)/2</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫sin²(x)dx = ∫(1-cos2x)/2 dx = x/2 - sin(2x)/4 + C</p></div>` },
+
+  { id:10, topic:"integral", title:"Universal trigonometrik almashtirishlar yordamida integrallash.",
+    sol:`<p>t = tan(x/2) almashtirishi:</p>
+    <div class="formula">sin(x) = 2t/(1+t²)
+cos(x) = (1-t²)/(1+t²)
+dx = 2dt/(1+t²)</div>
+    <p>Bu almashtirish ixtiyoriy ratsional trig. ifodani ratsional kasrga aylantiradi.</p>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫dx/(1+sin(x)): t=tan(x/2)<br>= ∫(2dt/(1+t²))/(1+2t/(1+t²)) = ∫2dt/(1+t)² = -2/(1+t) + C</p></div>` },
+
+  { id:11, topic:"integral", title:"Irrasional ifodalarni integrallash.",
+    sol:`<p>Asosiy almashtirishlar:</p>
+    <div class="formula">√(a²-x²) uchun: x = a·sin(t)
+√(a²+x²) uchun: x = a·tan(t)  
+√(x²-a²) uchun: x = a/cos(t)
+∫R(x, ⁿ√((ax+b)/(cx+d)))dx uchun: t = ⁿ√((ax+b)/(cx+d))</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫dx/√(1-x²): x=sin(t) → ∫cos(t)dt/cos(t) = t+C = arcsin(x)+C</p></div>` },
+
+  // ===== ANIQ INTEGRAL =====
+  { id:12, topic:"integral", title:"Aniq integralga keltiriluvchi masalalar.",
+    sol:`<p>Aniq integral quyidagilarda qo'llanadi:</p>
+    <div class="formula">1) Yuza: S = ∫ₐᵇ |f(x)|dx
+2) Uzunlik: L = ∫ₐᵇ √(1+f'(x)²)dx
+3) Hajm: V = π∫ₐᵇ f²(x)dx  (aylantirish)
+4) Ish: A = ∫ₐᵇ F(x)dx</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y=x², [0,1] oralig'idagi yuza: S=∫₀¹x²dx = [x³/3]₀¹ = 1/3</p></div>` },
+
+  { id:13, topic:"integral", title:"Aniq integralning ta'rifi va uning asosiy xossalari.",
+    sol:`<p>Aniq integral — Riemann yig'indisining chegarasi:</p>
+    <div class="formula">∫ₐᵇ f(x)dx = lim(max Δxᵢ→0) Σ f(ξᵢ)·Δxᵢ</div>
+    <p><b>Xossalar:</b></p>
+    <div class="formula">∫ₐᵃ f dx = 0
+∫ₐᵇ f dx = -∫ᵦₐ f dx
+∫ₐᵇ (f±g)dx = ∫ₐᵇ fdx ± ∫ₐᵇ gdx
+∫ₐᵇ c·f dx = c·∫ₐᵇ f dx
+∫ₐᵇ f dx = ∫ₐᶜ f dx + ∫ᶜᵇ f dx</div>` },
+
+  { id:14, topic:"integral", title:"Nyuton-Leybnits formulasini misollar bilan tushuntiring.",
+    sol:`<p>Asosiy teorema (Nyuton-Leybnits):</p>
+    <div class="formula">∫ₐᵇ f(x)dx = F(b) - F(a) = [F(x)]ₐᵇ</div>
+    <p>Bu yerda F(x) — f(x) ning istalgan boshlang'ich funksiyasi.</p>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫₁³ x²dx = [x³/3]₁³ = 27/3 - 1/3 = 26/3 ≈ 8.67</p></div>
+    <div class="example-box"><div class="ex-label">Misol 2</div><p>∫₀^π sin(x)dx = [-cos(x)]₀^π = -cos(π)+cos(0) = 1+1 = 2</p></div>` },
+
+  { id:15, topic:"integral", title:"Aniq integralda o'zgaruvchini almashtirishni misollar bilan izohlang.",
+    sol:`<p>x = φ(t) qo'ysak, chegara ham o'zgaradi:</p>
+    <div class="formula">∫ₐᵇ f(x)dx = ∫_α^β f(φ(t))·φ'(t)dt
+Bu yerda: φ(α)=a, φ(β)=b</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫₀¹ x√(1-x²)dx: t=1-x², dt=-2xdx<br>x=0→t=1; x=1→t=0<br>= ∫₁⁰ √t·(-dt/2) = (1/2)∫₀¹√t dt = (1/2)·[2t^(3/2)/3]₀¹ = 1/3</p></div>` },
+
+  { id:16, topic:"integral", title:"Bo'laklab integrallashni misollar bilan tushuntiring.",
+    sol:`<p>Aniq integralda bo'laklab integrallash:</p>
+    <div class="formula">∫ₐᵇ u·dv = [u·v]ₐᵇ - ∫ₐᵇ v·du</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫₀¹ x·eˣdx: u=x, dv=eˣdx<br>= [x·eˣ]₀¹ - ∫₀¹ eˣdx<br>= e - [eˣ]₀¹ = e - (e-1) = 1</p></div>` },
+
+  // ===== XOSMAS INTEGRAL =====
+  { id:17, topic:"integral", title:"Xosmas integrallarni misollar bilan tushuntiring.",
+    sol:`<p>Xosmas integral — chegarasi cheksiz yoki integrallanuvchi cheksiz bo'lsa:</p>
+    <div class="formula">∫ₐ^∞ f(x)dx = lim(b→∞) ∫ₐᵇ f(x)dx</div>
+    <p>Agar chegara mavjud bo'lsa — <b>yaqinlashadi</b>, aks holda — <b>uzoqlashadi</b>.</p>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫₁^∞ dx/x² = lim(b→∞)[-1/x]₁ᵇ = 0-(-1) = 1 (yaqinlashadi)</p></div>` },
+
+  { id:18, topic:"integral", title:"Chegaralari cheksiz xosmas integrallarni misollar bilan tushuntiring.",
+    sol:`<p>Ikki tomonlama cheksiz:</p>
+    <div class="formula">∫₋∞^∞ f(x)dx = ∫₋∞^c f(x)dx + ∫_c^∞ f(x)dx</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫₁^∞ dx/xᵖ:<br>p>1 bo'lsa: = 1/(p-1) → yaqinlashadi<br>p≤1 bo'lsa: → uzoqlashadi</p></div>` },
+
+  { id:19, topic:"integral", title:"Chegaralanmagan funksiyalarning xosmas integrallari.",
+    sol:`<p>f(x) ning x=b nuqtasida uzilishi bo'lsa:</p>
+    <div class="formula">∫ₐᵇ f(x)dx = lim(ε→0⁺) ∫ₐ^(b-ε) f(x)dx</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫₀¹ dx/√x: f(0)=∞<br>= lim(ε→0) ∫_ε¹ x^(-1/2)dx = lim[2√x]_ε¹ = 2-0 = 2 (yaqinlashadi)</p></div>` },
+
+  { id:20, topic:"integral", title:"Xosmas integrallarning yaqinlashish alomatlari.",
+    sol:`<p>Asosiy alomatlar:</p>
+    <div class="formula">Taqqoslash alomati: 0≤f(x)≤g(x) bo'lsa:
+∫g yaqinlashsa → ∫f ham yaqinlashadi
+∫f uzoqlashsa → ∫g ham uzoqlashadi
+
+Chegara alomati: lim(x→∞) f(x)/g(x) = L, 0<L<∞ bo'lsa:
+∫f va ∫g bir vaqtda yaqinlashadi yoki uzoqlashadi
+
+p-integral: ∫₁^∞ dx/xᵖ yaqinlashadi ⟺ p > 1</div>` },
+
+  // ===== KO'P O'ZGARUVCHILI FUNKSIYA =====
+  { id:21, topic:"kop", title:"Ko'p o'zgaruvchili funksiyaning ta'rifi, aniqlanish sohasi, limiti, uzluksizligi va xususiy hosilalari.",
+    sol:`<p>z = f(x,y) — ikki o'zgaruvchili funksiya.</p>
+    <div class="formula">Aniqlanish sohasi D: f(x,y) ma'noli bo'lgan (x,y) lar to'plami
+
+Limit: lim((x,y)→(x₀,y₀)) f(x,y) = A
+
+Uzluksizlik: f(x₀,y₀) = lim((x,y)→(x₀,y₀)) f(x,y)</div>
+    <p><b>Xususiy hosilalar:</b></p>
+    <div class="formula">∂f/∂x = lim(Δx→0) [f(x+Δx,y)-f(x,y)]/Δx  (y = const)
+∂f/∂y = lim(Δy→0) [f(x,y+Δy)-f(x,y)]/Δy  (x = const)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>f(x,y)=x²y+y³: ∂f/∂x=2xy; ∂f/∂y=x²+3y²</p></div>` },
+
+  { id:22, topic:"kop", title:"To'la differensial. Ko'p o'zgaruvchili funksiyaning xususiy va to'la differensiali.",
+    sol:`<p>To'la differensial:</p>
+    <div class="formula">dz = (∂f/∂x)dx + (∂f/∂y)dy</div>
+    <p>To'la differensiallash shartlari: xususiy hosilalar uzluksiz bo'lsin.</p>
+    <div class="example-box"><div class="ex-label">Misol</div><p>f(x,y)=x²+xy: ∂f/∂x=2x+y, ∂f/∂y=x<br>dz = (2x+y)dx + x·dy</p></div>
+    <div class="tip-box">To'la differensialdan taxminiy hisoblashlarda foydalaniladi: Δz ≈ dz</div>` },
+
+  { id:23, topic:"kop", title:"Yuqori tartibli xususiy hosilalarni misollar bilan tushuntiring.",
+    sol:`<p>Ikkinchi tartibli xususiy hosilalar:</p>
+    <div class="formula">∂²f/∂x² = ∂/∂x(∂f/∂x)
+∂²f/∂y² = ∂/∂y(∂f/∂y)
+∂²f/∂x∂y = ∂/∂x(∂f/∂y)  — aralash hosila</div>
+    <p>Shvarts teoremasi: ∂²f/∂x∂y = ∂²f/∂y∂x (uzluksiz bo'lsa)</p>
+    <div class="example-box"><div class="ex-label">Misol</div><p>f=x³y²: ∂²f/∂x²=6xy², ∂²f/∂y²=2x³, ∂²f/∂x∂y=6x²y</p></div>` },
+
+  { id:24, topic:"kop", title:"Yuqori tartibli differensiallarni misollar bilan tushuntiring.",
+    sol:`<p>Ikkinchi tartibli to'la differensial:</p>
+    <div class="formula">d²z = (∂²f/∂x²)dx² + 2(∂²f/∂x∂y)dx·dy + (∂²f/∂y²)dy²</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>f=x²y: ∂²f/∂x²=2y, ∂²f/∂x∂y=2x, ∂²f/∂y²=0<br>d²f = 2y·dx² + 2·2x·dx·dy + 0 = 2y·dx² + 4x·dx·dy</p></div>` },
+
+  { id:25, topic:"kop", title:"Ko'p o'zgaruvchili funksiyaning ekstremumlarini misollar bilan tushuntiring.",
+    sol:`<p>Ekstremum tekshirish algoritmi:</p>
+    <div class="formula">1) ∂f/∂x = 0 va ∂f/∂y = 0 — stasionar nuqtalar toping
+2) A=∂²f/∂x², B=∂²f/∂x∂y, C=∂²f/∂y² hisoblang
+3) D = AC - B²:
+   D > 0, A < 0 → maksimum
+   D > 0, A > 0 → minimum
+   D < 0 → egarch nuqta
+   D = 0 → aniqlab bo'lmaydi</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>f=x²+y²-2x-4y: ∂f/∂x=2x-2=0→x=1; ∂f/∂y=2y-4=0→y=2<br>A=2, B=0, C=2, D=4>0, A>0 → (1,2) minimum nuqta</p></div>` },
+
+  { id:26, topic:"kop", title:"Shartli ekstremumni izohlang.",
+    sol:`<p>Lagrange ko'payuvchilar usuli:</p>
+    <div class="formula">f(x,y) → extr, φ(x,y)=0 sharti bilan
+
+L(x,y,λ) = f(x,y) + λ·φ(x,y)
+
+∂L/∂x = 0
+∂L/∂y = 0
+∂L/∂λ = 0  (= φ(x,y) = 0)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>f=x·y → max, x+y=10 sharti bilan<br>L=xy+λ(x+y-10)<br>y+λ=0; x+λ=0; x+y=10 → x=y=5, f_max=25</p></div>` },
+
+  // ===== DIFFERENSIAL TENGLAMALAR =====
+  { id:27, topic:"dt", title:"Differensial tenglamaga keltiriluvchi masalalar.",
+    sol:`<p>Differensial tenglamalar quyidagi masalalarda paydo bo'ladi:</p>
+    <div class="formula">1) Erkin tushish: y'' = g  (g = 9.8 m/s²)
+2) Radioaktiv parchalanish: dN/dt = -λN
+3) Populyatsiya o'sishi: dP/dt = kP
+4) Elektr zanjiri: L·dI/dt + R·I = E(t)
+5) Silkinish: mx'' + cx' + kx = F(t)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>Bakteriya soni: dN/dt = 2N → N = N₀·e^(2t)</p></div>` },
+
+  { id:28, topic:"dt", title:"Differensial tenglamalar nazariyasining asosiy tushunchalari.",
+    sol:`<p>Asosiy atamalar:</p>
+    <div class="formula">Tartib — eng yuqori hosilaning tartibi
+Umumiy yechim — barcha yechimlarni qamrab oladi (C lar bilan)
+Xususiy yechim — C larga aniq qiymat berilganda
+Singular yechim — umumiy yechimdan olinmaydi
+
+F(x, y, y', y'', ..., y⁽ⁿ⁾) = 0 — n-tartibli DT</div>` },
+
+  { id:29, topic:"dt", title:"1-tartibli DT uchun Koshi masalasi — mavjudligi va yagonaligi.",
+    sol:`<p>Koshi masalasi: y' = f(x,y),  y(x₀) = y₀</p>
+    <div class="formula">Peano teoremasi (mavjudlik):
+f(x,y) uzluksiz bo'lsa → yechim mavjud
+
+Pikar-Lindelyof teoremasi (yagonalik):
+f va ∂f/∂y uzluksiz bo'lsa → yechim yagona</div>
+    <div class="tip-box">Boshlang'ich shart yechimni yagona aniqlaydi.</div>` },
+
+  { id:30, topic:"dt", title:"O'zgaruvchilari ajralgan va ajraladigan DT larni misollar bilan izohlang.",
+    sol:`<p>Ajralgan: y' = f(x)·g(y)</p>
+    <div class="formula">dy/g(y) = f(x)dx
+Ikkala tarafni integrallaymiz:
+∫dy/g(y) = ∫f(x)dx + C</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y' = xy: dy/y = x·dx → ln|y| = x²/2 + C → y = Ae^(x²/2)</p></div>` },
+
+  { id:31, topic:"dt", title:"Bir jinsli differensial tenglamalarni misollar bilan izohlang.",
+    sol:`<p>y' = f(y/x) — bir jinsli tenglama. v = y/x almashtirish:</p>
+    <div class="formula">y = v·x → y' = v + x·v'
+v + x·v' = f(v)
+x·dv/dx = f(v) - v  → o'zgaruvchilari ajraladigan</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y' = (x+y)/x = 1 + y/x: v=y/x, v+xv'=1+v → xv'=1 → v=ln|x|+C → y=x(ln|x|+C)</p></div>` },
+
+  { id:32, topic:"dt", title:"Birinchi tartibli chiziqli DT ni misollar bilan tushuntiring.",
+    sol:`<p>y' + P(x)·y = Q(x)</p>
+    <div class="formula">Integrallovchi omil: μ(x) = e^(∫P(x)dx)
+
+Yechim: y = (1/μ)·[∫μ·Q(x)dx + C]</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y' - y = eˣ: P=-1, μ=e^(-x)<br>(e^(-x)·y)' = 1 → e^(-x)·y = x+C → y = (x+C)eˣ</p></div>` },
+
+  { id:33, topic:"dt", title:"Bernulli tenglamasini misollar bilan tushuntiring.",
+    sol:`<p>y' + P(x)·y = Q(x)·yⁿ,  n≠0,1</p>
+    <div class="formula">z = y^(1-n) almashtirish:
+z' + (1-n)P(x)·z = (1-n)Q(x)  → chiziqli!</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y' - y = y², n=2, z=y^(-1)=1/y<br>-z' - z = 1 → z' + z = -1 → z = Ce^(-x) - 1<br>y = 1/(Ce^(-x)-1)</p></div>` },
+
+  { id:34, topic:"dt", title:"To'la differensial tenglamani misollar bilan tushuntiring.",
+    sol:`<p>M(x,y)dx + N(x,y)dy = 0 — to'la agar:</p>
+    <div class="formula">∂M/∂y = ∂N/∂x
+
+U(x,y) topiladi: ∂U/∂x = M, ∂U/∂y = N
+Yechim: U(x,y) = C</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>(2xy+1)dx + x²dy = 0<br>∂M/∂y=2x, ∂N/∂x=2x ✓ → To'la!<br>U = ∫(2xy+1)dx = x²y+x → x²y+x = C</p></div>` },
+
+  { id:35, topic:"dt", title:"O'zgarmas koeffisientli 2-tartibli bir jinsli DT.",
+    sol:`<p>y'' + py' + qy = 0</p>
+    <div class="formula">Xarakteristik tenglama: k² + pk + q = 0
+
+D > 0: k₁,k₂ haqiqiy → y = C₁e^(k₁x) + C₂e^(k₂x)
+D = 0: k₁=k₂=k → y = (C₁+C₂x)e^(kx)
+D < 0: k=α±βi → y = e^(αx)(C₁cos(βx)+C₂sin(βx))</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y''-3y'+2y=0: k²-3k+2=0 → k₁=1, k₂=2 → y=C₁eˣ+C₂e^(2x)</p></div>` },
+
+  { id:36, topic:"dt", title:"O'zgarmas koeffisientli 2-tartibli bir jinsli bo'lmagan DT.",
+    sol:`<p>y'' + py' + qy = f(x)</p>
+    <div class="formula">Umumiy yechim: y = y_bir_jinsli + y_xususiy
+
+y_xususiy topish usullari:
+1) Noaniq koeffisientlar (f polinomial/trig/exp)
+2) Koeffisientlarni variatsiyalash (har qanday f)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y''-y=eˣ: bir jinsli: y_h=C₁eˣ+C₂e^(-x)<br>y_p = xAeˣ (rezonans!) → A=1/2<br>y = C₁eˣ+C₂e^(-x) + (x/2)eˣ</p></div>` },
+
+  { id:37, topic:"dt", title:"Differensial tenglamalar sistemasini misollar bilan tushuntiring.",
+    sol:`<p>DT sistemasi:</p>
+    <div class="formula">x' = ax + by
+y' = cx + dy
+
+Xarakteristik tenglama:
+|a-λ  b  | = 0
+|c    d-λ|</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>x'=x+y, y'=x-y: λ²-2=0 → λ=±√2<br>Umumiy yechim mos vektorlar orqali tuziladi.</p></div>` },
+
+  { id:38, topic:"dt", title:"Differensial tenglamalarning amaliy masalalarda qo'llanilishi.",
+    sol:`<p>Amaliy qo'llanishlar:</p>
+    <div class="formula">Mexanik silkinish:
+mx'' + cx' + kx = F₀cos(ωt)
+
+Issiqlik uzatish:
+dT/dt = -k(T - T_muhit)  (Nyuton qonuni)
+
+RC-zanjir:
+R·dq/dt + q/C = E(t)
+
+Logistik o'sish:
+dP/dt = rP(1 - P/K)</div>` },
+
+  // ===== SONLI QATORLAR =====
+  { id:39, topic:"qator", title:"Sonli qator tushunchasini misollar bilan tushuntiring.",
+    sol:`<p>Sonli qator: a₁ + a₂ + a₃ + ... = Σaₙ</p>
+    <div class="formula">Qisman yig'indi: Sₙ = a₁ + a₂ + ... + aₙ
+
+Qator yaqinlashadi ⟺ lim(n→∞) Sₙ = S (chekli)</div>
+    <div class="example-box"><div class="ex-label">Misol — Geometrik qator</div><p>1 + 1/2 + 1/4 + 1/8 + ...: S = 1/(1-1/2) = 2 (yaqinlashadi)</p></div>
+    <div class="example-box"><div class="ex-label">Misol — Garmonik</div><p>1 + 1/2 + 1/3 + ... → uzoqlashadi</p></div>` },
+
+  { id:40, topic:"qator", title:"Qator yaqinlashishining zaruriy shartlari.",
+    sol:`<p>Zaruriy shart: Σaₙ yaqinlashsa, u holda</p>
+    <div class="formula">lim(n→∞) aₙ = 0</div>
+    <p>Agar lim aₙ ≠ 0 bo'lsa — qator albatta uzoqlashadi.</p>
+    <div class="tip-box">Bu shart zaruriy, lekin yetarli emas! (Garmonik qatorda aₙ→0, lekin uzoqlashadi)</div>` },
+
+  { id:41, topic:"qator", title:"Yaqinlashuvchi qatorlar va ularning xossalari.",
+    sol:`<p>Xossalar:</p>
+    <div class="formula">1) Σ(aₙ ± bₙ) = Σaₙ ± Σbₙ
+2) Σ(c·aₙ) = c·Σaₙ
+3) Chekli sonli had qo'shish/olib tashlash yaqinlashishga ta'sir etmaydi
+4) Agar Σaₙ yaqinlashsa → Σaₙ₊ₖ ham yaqinlashadi</div>` },
+
+  { id:42, topic:"qator", title:"Garmonik qatorlar.",
+    sol:`<p>Garmonik qator: 1 + 1/2 + 1/3 + 1/4 + ...</p>
+    <div class="formula">Σ(1/n) — uzoqlashadi!
+
+Isboti (Koshi): S₂ₙ - Sₙ > n·(1/2n) = 1/2 → uzoqlashadi
+
+Umumlashgan garmonik: Σ(1/nᵖ)
+p > 1 → yaqinlashadi
+p ≤ 1 → uzoqlashadi</div>` },
+
+  { id:43, topic:"qator", title:"Musbat hadli qatorlarni taqqoslash teoremalari.",
+    sol:`<p>Taqqoslash:</p>
+    <div class="formula">Agar 0 ≤ aₙ ≤ bₙ bo'lsa:
+Σbₙ yaqinlashsa → Σaₙ yaqinlashadi
+Σaₙ uzoqlashsa → Σbₙ uzoqlashadi
+
+Chegara ko'rinishida:
+lim(aₙ/bₙ) = L, 0 < L < ∞ bo'lsa:
+ikkalasi bir vaqtda yaqinlashadi yoki uzoqlashadi</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>Σ1/(n²+1): 1/(n²+1) ≤ 1/n², Σ1/n² yaqinlashadi → Σ1/(n²+1) ham yaqinlashadi</p></div>` },
+
+  { id:44, topic:"qator", title:"Musbat hadli qatorlar: Dalamber, Koshi radikal va integral alomatlari.",
+    sol:`<p><b>Dalamber alomati:</b></p>
+    <div class="formula">L = lim |aₙ₊₁/aₙ|:  L<1 → yaqinlashadi, L>1 → uzoqlashadi</div>
+    <p><b>Koshi radikal alomati:</b></p>
+    <div class="formula">L = lim ⁿ√|aₙ|:  L<1 → yaqinlashadi, L>1 → uzoqlashadi</div>
+    <p><b>Integral alomati:</b></p>
+    <div class="formula">f(x) kamayuvchi, musbat bo'lsa:
+Σf(n) va ∫₁^∞ f(x)dx bir vaqtda yaqinlashadi</div>
+    <div class="example-box"><div class="ex-label">Misol — Dalamber</div><p>Σn!/nⁿ: aₙ₊₁/aₙ = (n/(n+1))ⁿ → 1/e < 1 → yaqinlashadi</p></div>` },
+
+  { id:45, topic:"qator", title:"Ishorasi almashinuvchi va o'zgaruvchan ishorali sonli qatorlar.",
+    sol:`<p>Ishorasi almashinuvchi: Σ(-1)ⁿaₙ, aₙ > 0</p>
+    <div class="formula">Leybnits teoremasi:
+aₙ kamayib 0 ga yaqinlashsa → qator yaqinlashadi
+Xato chegarasi: |S-Sₙ| ≤ aₙ₊₁</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>Σ(-1)ⁿ/n = -1+1/2-1/3+...: aₙ=1/n↓→0 → yaqinlashadi (ln2 ga)</p></div>` },
+
+  { id:46, topic:"qator", title:"Leybnis teoremasini izohlang.",
+    sol:`<p>Leybnits teoremasi — ishorasi almashinuvchi qatorlar uchun:</p>
+    <div class="formula">Σ(-1)^(n-1)·aₙ = a₁ - a₂ + a₃ - ...
+
+Shartlar:
+1) aₙ > 0 (barcha hadlar musbat)
+2) aₙ kamayuvchi: a₁ ≥ a₂ ≥ a₃ ≥ ...
+3) lim(n→∞) aₙ = 0
+
+⟹ qator yaqinlashadi</div>
+    <div class="tip-box">Qisman yig'indi xatosi: |Rₙ| ≤ aₙ₊₁</div>` },
+
+  { id:47, topic:"qator", title:"Absolyut va shartli yaqinlashuvchi qatorlar.",
+    sol:`<p>Absolyut yaqinlashish: Σ|aₙ| yaqinlashsa → Σaₙ ham yaqinlashadi.</p>
+    <div class="formula">Absolyut yaqinlashadi: Σ|aₙ| yaqinlashadi
+Shartli yaqinlashadi: Σaₙ yaqinlashadi, lekin Σ|aₙ| uzoqlashadi</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>Σ(-1)ⁿ/n²: Σ1/n² yaqinlashadi → absolyut yaqinlashadi<br>Σ(-1)ⁿ/n: yaqinlashadi, lekin Σ1/n uzoqlashadi → shartli</p></div>` },
+
+  // ===== DARAJALI QATORLAR =====
+  { id:48, topic:"qator", title:"Darajali qatorlarni izohlang.",
+    sol:`<p>Darajali qator: Σcₙ(x-a)ⁿ = c₀ + c₁(x-a) + c₂(x-a)² + ...</p>
+    <div class="formula">Yaqinlashish radiusi R:
+R = lim|cₙ/cₙ₊₁|  (Dalamber)
+R = 1/lim ⁿ√|cₙ|  (Koshi)
+
+Yaqinlashish oraliq: |x-a| < R</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>Σxⁿ/n!: R = lim (1/n!)/(1/(n+1)!) = lim(n+1) = ∞ → barcha x uchun</p></div>` },
+
+  { id:49, topic:"qator", title:"Abel teoremasini izohlang.",
+    sol:`<p>Abel teoremasi:</p>
+    <div class="formula">Agar Σcₙxⁿ qator x=R da yaqinlashsa,
+u holda u |x| < R da bir tekis yaqinlashadi
+va R da:
+lim(x→R⁻) Σcₙxⁿ = Σcₙ·Rⁿ</div>
+    <p>Ya'ni: chegara va yig'indi tartibini almashtirish mumkin.</p>` },
+
+  { id:50, topic:"qator", title:"Yaqinlashish radiusini izohlang.",
+    sol:`<p>Yaqinlashish radiusi R — darajali qator yaqinlashadigan eng katta radius:</p>
+    <div class="formula">R = lim(n→∞) |cₙ/cₙ₊₁|  (Dalamber)
+yoki
+R = 1/lim(n→∞) ⁿ√|cₙ|  (Koshi-Adamar)
+
+R = 0: faqat x=a da
+R = ∞: barcha x da
+0 < R < ∞: (a-R, a+R) da (chegara alohida tekshiriladi)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>Σxⁿ/n: R = lim (1/n)/(1/(n+1)) = lim(n+1)/n = 1; Yaqinlashish: (-1,1)</p></div>` },
+
+  { id:51, topic:"qator", title:"Yaqinlashuvchi darajali qatorlarning xossalari.",
+    sol:`<p>Asosiy xossalar:</p>
+    <div class="formula">1) Uzluksizlik: S(x) = Σcₙxⁿ yaqinlashish oraliqda uzluksiz
+
+2) Integrallash: ∫Σcₙxⁿdx = Σcₙ·xⁿ⁺¹/(n+1) + C
+   (yaqinlashish radiusi o'zgarmaydi)
+
+3) Differensiallash: (Σcₙxⁿ)' = Σn·cₙ·xⁿ⁻¹
+   (yaqinlashish radiusi o'zgarmaydi)</div>` },
+
+  { id:52, topic:"qator", title:"Qatorlarni differensiallash va integrallashni misollar bilan tushuntiring.",
+    sol:`<p>Qatorni differensiallash va integrallash had-had amalga oshiriladi:</p>
+    <div class="formula">Σcₙxⁿ → differensiallash → Σn·cₙ·xⁿ⁻¹
+Σcₙxⁿ → integrallash → Σcₙ·xⁿ⁺¹/(n+1)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>1/(1-x) = 1+x+x²+... ni integrallash:<br>-ln(1-x) = x + x²/2 + x³/3 + ... → ln(1-x) = -Σxⁿ/n</p></div>` },
+
+  { id:53, topic:"qator", title:"Funksiyalarni Teylor va Makloren qatorlariga yoyish.",
+    sol:`<p>Teylor qatori (x=a atrofida):</p>
+    <div class="formula">f(x) = Σ f⁽ⁿ⁾(a)/n! · (x-a)ⁿ</div>
+    <p>Makloren qatori (a=0):</p>
+    <div class="formula">f(x) = f(0) + f'(0)x + f''(0)x²/2! + ...</div>
+    <div class="example-box"><div class="ex-label">Asosiy qatorlar</div><p>eˣ = 1+x+x²/2!+x³/3!+...<br>sin(x) = x - x³/3! + x⁵/5! - ...<br>cos(x) = 1 - x²/2! + x⁴/4! - ...</p></div>` },
+
+  { id:54, topic:"qator", title:"Binomial qatorni misollar bilan izohlang.",
+    sol:`<p>Binomial qator (|x|<1 da):</p>
+    <div class="formula">(1+x)^α = 1 + αx + α(α-1)/2! x² + α(α-1)(α-2)/3! x³ + ...
+            = Σ C(α,n)·xⁿ</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>√(1+x) = (1+x)^(1/2) = 1 + x/2 - x²/8 + x³/16 - ...</p></div>
+    <div class="example-box"><div class="ex-label">Misol 2</div><p>1/(1-x) = (1-x)^(-1) = 1+x+x²+x³+... (|x|<1)</p></div>` },
+
+  { id:55, topic:"qator", title:"Asosiy elementar funksiyalarni qatorlarga yoyish.",
+    sol:`<p>Muhim Makloren qatorlari:</p>
+    <div class="formula">eˣ = Σxⁿ/n!  (barcha x)
+sin(x) = Σ(-1)ⁿx^(2n+1)/(2n+1)!  (barcha x)
+cos(x) = Σ(-1)ⁿx^(2n)/(2n)!  (barcha x)
+ln(1+x) = Σ(-1)^(n+1)xⁿ/n  (|x|≤1, x≠-1)
+arctan(x) = Σ(-1)ⁿx^(2n+1)/(2n+1)  (|x|≤1)
+1/(1-x) = Σxⁿ  (|x|<1)</div>` },
+
+  { id:56, topic:"qator", title:"Qatorlarni taqribiy hisoblashlarga qo'llash.",
+    sol:`<p>Qatorlar yordamida taqribiy hisoblash:</p>
+    <div class="formula">f(x) ≈ Sₙ(x) = a₀ + a₁x + ... + aₙxⁿ
+Xato: |f(x) - Sₙ(x)| ≤ |aₙ₊₁|·xⁿ⁺¹  (alternating series)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>e^0.1 ≈ 1 + 0.1 + 0.01/2 + 0.001/6 ≈ 1.10517</p></div>
+    <div class="example-box"><div class="ex-label">Integral hisoblash</div><p>∫₀^1 sin(x)/x dx = ∫₀^1(1-x²/6+x⁴/120-...)dx = 1-1/18+1/600-... ≈ 0.9461</p></div>` },
+
+  // ===== FURYE QATORI =====
+  { id:57, topic:"qator", title:"Furye qatori va Furye koeffisientlari.",
+    sol:`<p>Davri 2π bo'lgan funksiya uchun Furye qatori:</p>
+    <div class="formula">f(x) = a₀/2 + Σ(aₙcos(nx) + bₙsin(nx))
+
+Furye koeffisientlari:
+a₀ = (1/π)∫₋π^π f(x)dx
+aₙ = (1/π)∫₋π^π f(x)cos(nx)dx
+bₙ = (1/π)∫₋π^π f(x)sin(nx)dx</div>` },
+
+  { id:58, topic:"qator", title:"Furye qatorining yaqinlashishini misollar bilan tushuntiring.",
+    sol:`<p>Dirixle teoremasi shartlari bajarilsa, Furye qatori yaqinlashadi:</p>
+    <div class="formula">Uzluksizlik nuqtasida: → f(x)
+Uzilish nuqtasida: → [f(x⁺) + f(x⁻)]/2</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>f(x)=x, (-π,π): a₀=0, aₙ=0, bₙ=2(-1)^(n+1)/n<br>x = 2Σ(-1)^(n+1)sin(nx)/n</p></div>` },
+
+  { id:59, topic:"qator", title:"Dirixle teoremasini izohlang.",
+    sol:`<p>Dirixle teoremasi (Furye qatori yaqinlashishi uchun yetarli shartlar):</p>
+    <div class="formula">1) f(x) davri 2π bo'lsin
+2) [-π,π] da chekli sonli uzilish nuqtasi bo'lsin
+3) [-π,π] da chekli sonli ekstremal bo'lsin
+
+⟹ Furye qatori hamma nuqtada yaqinlashadi:
+- uzluksiz nuqtada: S(x) = f(x)
+- uzilish nuqtasida: S(x) = [f(x⁺)+f(x⁻)]/2</div>` },
+
+  { id:60, topic:"qator", title:"Toq va juft funksiyalarning Furye qatori.",
+    sol:`<p>Juft funksiya f(-x)=f(x):</p>
+    <div class="formula">bₙ = 0, faqat cosinus:
+f(x) = a₀/2 + Σaₙcos(nx),  aₙ = (2/π)∫₀^π f(x)cos(nx)dx</div>
+    <p>Toq funksiya f(-x)=-f(x):</p>
+    <div class="formula">aₙ = 0, faqat sinus:
+f(x) = Σbₙsin(nx),  bₙ = (2/π)∫₀^π f(x)sin(nx)dx</div>
+    <div class="tip-box">Bundan foydalanib, hisoblashlar ikki marta osonlashadi!</div>` },
+
+  { id:61, topic:"qator", title:"Davri 2l ga teng funksiyalarni Furye qatoriga yoyish.",
+    sol:`<p>Davri 2l bo'lgan funksiya uchun:</p>
+    <div class="formula">f(x) = a₀/2 + Σ(aₙcos(πnx/l) + bₙsin(πnx/l))
+
+a₀ = (1/l)∫₋ₗˡ f(x)dx
+aₙ = (1/l)∫₋ₗˡ f(x)cos(πnx/l)dx
+bₙ = (1/l)∫₋ₗˡ f(x)sin(πnx/l)dx</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>l=1: davri 2 bo'lgan funksiya uchun sin/cos ning argumenti πnx bo'ladi</p></div>` },
+
+  // ===== KARRALI INTEGRALLAR =====
+  { id:62, topic:"karrali", title:"Ikki o'lchovli integral, uning xossalari, geometrik va mexanik ma'nosi.",
+    sol:`<p>Ikki karrali integral:</p>
+    <div class="formula">∬_D f(x,y)dA = lim Σ f(xᵢ,yⱼ)·ΔAᵢⱼ</div>
+    <p><b>Geometrik ma'no:</b> f≥0 bo'lsa — D ustidagi hajm<br><b>Mexanik ma'no:</b> Massa = ∬ρ(x,y)dA</p>
+    <div class="formula">Xossalar: chiziqlilik, additiv, agar f≤g → ∬f ≤ ∬g
+O'rtacha qiymat: f_o'r = (1/S(D))∬_D f dA</div>` },
+
+  { id:63, topic:"karrali", title:"Ikki o'lchovli integralni hisoblashni misollar bilan tushuntiring.",
+    sol:`<p>Kartezian koordinatada qayta integrallash:</p>
+    <div class="formula">D: a≤x≤b, φ₁(x)≤y≤φ₂(x):
+∬_D f dA = ∫ₐᵇ [∫_{φ₁(x)}^{φ₂(x)} f(x,y)dy] dx</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∬_D xy dA, D: 0≤x≤1, 0≤y≤x<br>= ∫₀¹ [∫₀ˣ xy dy]dx = ∫₀¹ x·[y²/2]₀ˣ dx = ∫₀¹ x³/2 dx = 1/8</p></div>` },
+
+  { id:64, topic:"karrali", title:"Ikki karrali integralda o'zgaruvchilarni almashtirish.",
+    sol:`<p>Polyar koordinatalar: x=rcos(θ), y=rsin(θ)</p>
+    <div class="formula">∬_D f(x,y)dxdy = ∬_D* f(rcosθ, rsinθ)·r·drdθ
+Bu yerda r — Yakov determinanti (|J|=r)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∬_{x²+y²≤1} (x²+y²)dA: polyar:<br>= ∫₀^{2π}∫₀¹ r²·r·dr·dθ = 2π·[r⁴/4]₀¹ = π/2</p></div>` },
+
+  { id:65, topic:"karrali", title:"Uch o'lchovli integral va uning asosiy xossalari.",
+    sol:`<p>Uch karrali integral:</p>
+    <div class="formula">∭_V f(x,y,z)dV</div>
+    <p><b>Ma'no:</b> f=1 → hajm; f=ρ → massa; f=ρz → og'irlik markazi</p>
+    <div class="formula">Xossalar: chiziqlilik, additiv (sohalar bo'yicha),
+monotonlik, o'rtacha qiymat teoremasi</div>` },
+
+  { id:66, topic:"karrali", title:"Uch karrali integralni hisoblash.",
+    sol:`<p>Kartezian koordinatada:</p>
+    <div class="formula">∭_V f dV = ∫dz∫dy∫f(x,y,z)dx  (3 marta integrallash)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∭_V z·dV, V: 0≤x≤1, 0≤y≤1, 0≤z≤1<br>= ∫₀¹∫₀¹∫₀¹ z·dzdydx = 1·1·[z²/2]₀¹ = 1/2</p></div>` },
+
+  { id:67, topic:"karrali", title:"Uch o'lchovli integralda o'zgaruvchilarni almashtirish va tatbiqlari.",
+    sol:`<p>Silindr koordinatalar: x=rcos(θ), y=rsin(θ), z=z</p>
+    <div class="formula">dV = r·dr·dθ·dz</div>
+    <p>Sferik koordinatalar: x=ρsin(φ)cos(θ), y=ρsin(φ)sin(θ), z=ρcos(φ)</p>
+    <div class="formula">dV = ρ²sin(φ)·dρ·dφ·dθ</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>Shar hajmi: V = ∫₀^{2π}∫₀^π∫₀^R ρ²sinφ dρdφdθ = 4πR³/3</p></div>` },
+
+  { id:68, topic:"karrali", title:"Birinchi va ikkinchi tur egri chiziqli integrallar.",
+    sol:`<p><b>1-tur (uzunlik bo'yicha):</b></p>
+    <div class="formula">∫_L f(x,y)dl = ∫ₐᵇ f(x(t),y(t))·√(x'²+y'²)dt</div>
+    <p><b>2-tur (koordinatalar bo'yicha):</b></p>
+    <div class="formula">∫_L P dx + Q dy = ∫ₐᵇ [P(x(t),y(t))x'(t) + Q(x(t),y(t))y'(t)]dt</div>
+    <div class="example-box"><div class="ex-label">Misol (1-tur)</div><p>Aylana x=cos(t), y=sin(t), t∈[0,2π]: ∫_L 1·dl = 2π (uzunlik)</p></div>` },
+
+  { id:69, topic:"karrali", title:"Grin formulasini izohlang.",
+    sol:`<p>Grin formulasi (tekislikda):</p>
+    <div class="formula">∮_L P dx + Q dy = ∬_D (∂Q/∂x - ∂P/∂y) dxdy
+
+L — D sohasining chegarasi (soatga qarama-qarshi)
+P, Q — uzluksiz birinchi tartibli hosilalarga ega</div>
+    <div class="example-box"><div class="ex-label">Misol — Yuza</div><p>D ning yuzasi: S = (1/2)∮(x dy - y dx)<br>ya'ni P=-y/2, Q=x/2 qo'ysak: ∂Q/∂x-∂P/∂y = 1</p></div>
+    <div class="tip-box">Grin formulasi egri chiziqli integralni ikki karrali integraga aylantiradi.</div>` },
+
+  // ===== TAKRORIY SAVOLLAR (2-QISM) =====
+  { id:70, topic:"integral", title:"Eng sodda kasrlarni integrallash (takror).",
+    sol:`<p>4 turdagi eng sodda kasr:</p>
+    <div class="formula">I) ∫A/(x-a)dx = A·ln|x-a| + C
+II) ∫A/(x-a)ⁿdx = -A/((n-1)(x-a)^(n-1)) + C
+III) ∫(Mx+N)/(x²+px+q)dx  → tam kvadrat + arxtan
+IV) ∫(Mx+N)/(x²+px+q)ⁿdx → rekurrent formula</div>
+    <div class="example-box"><div class="ex-label">Misol (III tur)</div><p>∫dx/(x²+4) = (1/2)arctan(x/2) + C</p></div>` },
+
+  { id:71, topic:"integral", title:"Ratsional kasrlarni sodda kasrlarga ajratish (takror).",
+    sol:`<p>Sodda kasrlarga ajratish algoritmi (to'liq):</p>
+    <div class="formula">P(x)/Q(x) bo'lsa:
+1) daraja(P) ≥ daraja(Q): bo'lish
+2) Q(x) ko'paytuvchi: (x-a)ᵏ va (x²+px+q)ᵐ
+3) Koeffisientlarni noaniqlash yo nisbatlar usuli
+4) Har bir qismni alohida integrallaymiz</div>` },
+
+  { id:72, topic:"integral", title:"Rasional funksiyalarni integrallash (takror).",
+    sol:`<p>To'liq algoritm:</p>
+    <div class="formula">Misol: ∫(x²+1)/((x-1)(x+1)²)dx
+
+= ∫[A/(x-1) + B/(x+1) + C/(x+1)²]dx
+
+Koeffisientlar: A=1/2, B=1/2, C=1
+
+= (1/2)ln|x-1| + (1/2)ln|x+1| - 1/(x+1) + C</div>` },
+
+  { id:73, topic:"integral", title:"Trigonometrik funksiyalar qatnashgan ifodalarni integrallash (takror).",
+    sol:`<p>Asosiy usullar:</p>
+    <div class="formula">∫sinⁿx·cosᵐx dx:
+• n toq: sin(x)=t, dt=cos(x)dx
+• m toq: cos(x)=t, dt=-sin(x)dx
+• ikkalasi juft: ikki burchak
+∫tan(x)dx = -ln|cos(x)| + C
+∫cot(x)dx = ln|sin(x)| + C</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫sin³(x)dx = ∫(1-cos²x)sin(x)dx: t=cos(x)<br>= ∫(1-t²)(-dt) = -t+t³/3+C = -cos(x)+cos³(x)/3+C</p></div>` },
+
+  { id:74, topic:"integral", title:"Universal trigonometrik almashtirishlar (takror).",
+    sol:`<p>t = tan(x/2) universal almashtirish:</p>
+    <div class="formula">sin(x) = 2t/(1+t²),  cos(x) = (1-t²)/(1+t²),  dx = 2dt/(1+t²)
+
+Qo'llanish: ∫R(sin x, cos x) dx → ratsional kasrga</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫dx/(2+cos x): t=tan(x/2)<br>= ∫2dt/(1+t²) / (2+(1-t²)/(1+t²)) = ∫2dt/(3+t²)<br>= (2/√3)arctan(t/√3)+C</p></div>` },
+
+  { id:75, topic:"integral", title:"Irrasional ifodalarni integrallash (takror).",
+    sol:`<p>Almashtirish turlari:</p>
+    <div class="formula">√(a²-x²): x=a sin(t), dx=a cos(t)dt
+√(a²+x²): x=a tan(t), dx=a/cos²(t)dt
+√(x²-a²): x=a/cos(t), dx=a sin(t)/cos²(t)dt
+ⁿ√x: t=xⁿ → t^n=x</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫√(4-x²)dx: x=2sin(t) → ∫2cos(t)·2cos(t)dt = 2∫(1+cos2t)dt = 2t+sin2t+C</p></div>` },
+
+  { id:76, topic:"integral", title:"Aniq integralga keltiriluvchi masalalar (takror).",
+    sol:`<p>Geometrik masalalar:</p>
+    <div class="formula">Yuzasi: S = ∫ₐᵇ [f(x)-g(x)]dx  (f≥g)
+Hajm (aylantirish Ox atrofida): V = π∫ₐᵇ f²(x)dx
+Egri chiziq uzunligi: L = ∫ₐᵇ √(1+f'²)dx
+Krivizna radiusi: R = (1+f'²)^(3/2)/|f''|</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y=√x, [0,4] sohasining yuzasi: S=∫₀⁴ √x dx = [2x^(3/2)/3]₀⁴ = 16/3</p></div>` },
+
+  { id:77, topic:"integral", title:"Aniq integral ta'rifi va xossalari (takror).",
+    sol:`<p>Ta'rif va muhim xossalar:</p>
+    <div class="formula">Oraliq additiv: ∫ₐᵇ = ∫ₐᶜ + ∫ᶜᵇ
+O'rtacha qiymat: ∫ₐᵇ f dx = f(ξ)·(b-a) (Lagrange)
+Integralning hosilasi: d/dx ∫ₐˣ f(t)dt = f(x)
+Agar f juft: ∫₋ₐᵃ f dx = 2∫₀ᵃ f dx
+Agar f toq: ∫₋ₐᵃ f dx = 0</div>` },
+
+  { id:78, topic:"integral", title:"Nyuton-Leybnits formulasi (takror).",
+    sol:`<p>Asosiy formula:</p>
+    <div class="formula">∫ₐᵇ f(x)dx = F(b) - F(a)
+
+Leibniz qoidasi (parametrli integral):
+d/dx ∫_{a(x)}^{b(x)} f(t)dt = f(b(x))·b'(x) - f(a(x))·a'(x)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>d/dx ∫₀^(x²) sin(t)dt = sin(x²)·2x = 2x·sin(x²)</p></div>` },
+
+  { id:79, topic:"integral", title:"Aniq integralda o'zgaruvchini almashtirish (takror).",
+    sol:`<p>Almashtirish x=φ(t):</p>
+    <div class="formula">∫ₐᵇ f(x)dx = ∫_α^β f(φ(t))·φ'(t)dt
+Yangi chegara: α=φ⁻¹(a), β=φ⁻¹(b)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫₀¹ √(1-x²)dx: x=sin(t), t: 0→π/2<br>= ∫₀^{π/2} cos²(t)dt = π/4 (chorak doira yuzasi)</p></div>` },
+
+  { id:80, topic:"integral", title:"Bo'laklab integrallash (takror).",
+    sol:`<p>Bo'laklab integrallash formulasi:</p>
+    <div class="formula">∫ₐᵇ u dv = [uv]ₐᵇ - ∫ₐᵇ v du
+
+Qaysi funksiya u bo'lishi kerak?
+LIATE: Logarifm > Inverse trig > Algebraic > Trig > Exponential</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫₁ᵉ ln(x)dx: u=ln(x), dv=dx<br>= [x·ln(x)]₁ᵉ - ∫₁ᵉ dx = e - (e-1) = 1</p></div>` },
+
+  { id:81, topic:"integral", title:"Xosmas integrallar (takror).",
+    sol:`<p>Xosmas integral turlari:</p>
+    <div class="formula">1) ∫ₐ^∞ f dx = lim_{b→∞} ∫ₐᵇ f dx
+2) ∫₋∞ᵇ f dx = lim_{a→-∞} ∫ₐᵇ f dx  
+3) ∫₋∞^∞ f dx = ∫₋∞^c f dx + ∫_c^∞ f dx
+4) f(b)=∞: ∫ₐᵇ f dx = lim_{ε→0} ∫ₐ^{b-ε} f dx</div>` },
+
+  { id:82, topic:"integral", title:"Chegaralari cheksiz xosmas integrallar (takror).",
+    sol:`<p>Asosiy tur: ∫₁^∞ dx/xᵖ</p>
+    <div class="formula">p > 1: = 1/(p-1) → yaqinlashadi
+p ≤ 1: → uzoqlashadi
+
+∫₀^∞ e^(-x) dx = 1  → yaqinlashadi
+∫₀^∞ sin(x) dx → uzoqlashadi (chegara yo'q)</div>` },
+
+  { id:83, topic:"integral", title:"Chegaralanmagan funksiyalarning xosmas integrallari (takror).",
+    sol:`<p>f(a) = ∞ bo'lgan holda:</p>
+    <div class="formula">∫ₐᵇ f(x)dx = lim_{ε→0⁺} ∫_{a+ε}^b f(x)dx
+
+Asosiy tur: ∫₀¹ dx/xᵖ
+p < 1: = 1/(1-p) → yaqinlashadi
+p ≥ 1: → uzoqlashadi</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>∫₀¹ dx/√x = [2√x]₀¹ = 2 (p=1/2 < 1, yaqinlashadi)</p></div>` },
+
+  { id:84, topic:"integral", title:"Xosmas integrallarning yaqinlashish alomatlari (takror).",
+    sol:`<p>Asosiy alomatlar:</p>
+    <div class="formula">Absolyut yaqinlashish:
+∫|f|dx yaqinlashsa → ∫f dx ham yaqinlashadi
+
+Taqqoslash (chegara):
+lim_{x→∞} f(x)/g(x) = L, 0<L<∞:
+ikkalasi bir xil xususiyatga ega
+
+Dirixle: f kamayib 0→, G(x)=∫ₐˣg dt chegaralangan → ∫fg yaqinlashadi</div>` },
+
+  // ===== KO'P O'ZGARUVCHILI (TAKROR) =====
+  { id:85, topic:"kop", title:"Ko'p o'zgaruvchili funksiya: ta'rif, soha, limit, uzluksizlik, hosilalar (takror).",
+    sol:`<p>Asosiy tushunchalar:</p>
+    <div class="formula">z=f(x,y): R²→R
+Aniqlanish sohasi D ⊂ R²
+lim_{(x,y)→(x₀,y₀)} f(x,y) = L: barcha yo'l bo'ylab
+
+Uzluksizlik: limit = funksiya qiymati
+Xususiy hosilalar: ∂z/∂x (y=const), ∂z/∂y (x=const)</div>` },
+
+  { id:86, topic:"kop", title:"To'la differensial va xususiy differensiallar (takror).",
+    sol:`<p>To'la differensial mavjudligi:</p>
+    <div class="formula">dz = (∂z/∂x)Δx + (∂z/∂y)Δy = (∂z/∂x)dx + (∂z/∂y)dy
+
+Agar ∂z/∂x va ∂z/∂y uzluksiz → to'la differensiallanadi
+
+Taxminiy hisoblash:
+f(x₀+Δx, y₀+Δy) ≈ f(x₀,y₀) + (∂f/∂x)Δx + (∂f/∂y)Δy</div>` },
+
+  { id:87, topic:"kop", title:"Yuqori tartibli xususiy hosilalar (takror).",
+    sol:`<p>2-tartibli xususiy hosilalar:</p>
+    <div class="formula">fₓₓ = ∂²f/∂x²,  f_yy = ∂²f/∂y²
+fₓᵧ = ∂²f/∂x∂y,  f_yₓ = ∂²f/∂y∂x
+Shvarts: fₓᵧ = f_yₓ (uzluksiz hosilalar uchun)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>f = x³y + sin(xy): fₓ=3x²y+y·cos(xy), fyy = -x²·sin(xy)</p></div>` },
+
+  { id:88, topic:"kop", title:"Yuqori tartibli differensiallar (takror).",
+    sol:`<p>n-tartibli differensial — formal qadratlash/ko'paytirish:</p>
+    <div class="formula">d²f = (∂/∂x·dx + ∂/∂y·dy)²f
+= fₓₓdx² + 2fₓᵧdxdy + f_yydy²
+
+d³f = fₓₓₓdx³ + 3fₓₓᵧdx²dy + 3fₓᵧᵧdxdy² + f_yyydy³</div>` },
+
+  { id:89, topic:"kop", title:"Ko'p o'zgaruvchili funksiya ekstremumlari (takror).",
+    sol:`<p>Ekstremum topish:</p>
+    <div class="formula">1) ∂f/∂x=0, ∂f/∂y=0 → stasionar nuqtalar
+2) D = f_{xx}·f_{yy} - (f_{xy})²
+   D>0, f_{xx}<0 → maksimum
+   D>0, f_{xx}>0 → minimum
+   D<0 → egarch (maksimum ham, minimum ham emas)
+   D=0 → aniqlanmaydi</div>` },
+
+  { id:90, topic:"kop", title:"Shartli ekstremum (takror).",
+    sol:`<p>Lagrange usuli:</p>
+    <div class="formula">f(x,y) → extr, g(x,y)=0 sharti:
+L = f + λg
+∂L/∂x = 0: fₓ + λgₓ = 0
+∂L/∂y = 0: fy + λgy = 0
+∂L/∂λ = 0: g(x,y) = 0</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>x²+y² min, x+y=1: L=x²+y²+λ(x+y-1)<br>2x+λ=0, 2y+λ=0 → x=y=1/2, min=1/2</p></div>` },
+
+  // ===== DIFFERENSIAL TENGLAMALAR (TAKROR) =====
+  { id:91, topic:"dt", title:"Differensial tenglamaga keltiriluvchi masalalar (takror).",
+    sol:`<p>Turli sohalardagi DT modellari:</p>
+    <div class="formula">Mexanik: F=ma → mx'' = F(x,x',t)
+Kimyo: dC/dt = -kC (1-tartibli reaksiya)
+Biologiya: dP/dt = rP(K-P)/K (logistik)
+Iqtisod: dK/dt = I(t) - δK (kapital jamg'arish)</div>` },
+
+  { id:92, topic:"dt", title:"Differensial tenglamalar nazariyasining asosiy tushunchalari (takror).",
+    sol:`<p>Muhim terminlar:</p>
+    <div class="formula">Tartib: eng yuqori hosilaning tartibi
+Umumiy yechim: n ta ixtiyoriy C bilan
+Xususiy yechim: C larga qiymat berilgan
+Koshi masalasi: y⁽ⁿ⁾ = f(...), y(x₀)=y₀, y'(x₀)=y₁,...
+Integral egri: yechimning grafigi</div>` },
+
+  { id:93, topic:"dt", title:"Koshi masalasi yechimining mavjudligi va yagonaligi (takror).",
+    sol:`<p>Pikar-Lindelyof teoremasi:</p>
+    <div class="formula">y' = f(x,y), y(x₀) = y₀
+
+Shartlar:
+1) f(x,y) uzluksiz [x₀-a, x₀+a]×[y₀-b, y₀+b] to'rtburchakda
+2) ∂f/∂y uzluksiz (Lipshits sharti)
+
+⟹ yechim mavjud va yagona</div>
+    <div class="tip-box">Pikar approximatsiyalari: yₙ₊₁ = y₀ + ∫f(x,yₙ)dx</div>` },
+
+  { id:94, topic:"dt", title:"O'zgaruvchilari ajralgan va ajraladigan DT (takror).",
+    sol:`<p>Standart shakl va yechish:</p>
+    <div class="formula">y' = f(x)·g(y):
+dy/g(y) = f(x)dx
+∫dy/g(y) = ∫f(x)dx + C</div>
+    <div class="example-box"><div class="ex-label">Misol 1</div><p>y' = y²: dy/y² = dx → -1/y = x+C → y = -1/(x+C)</p></div>
+    <div class="example-box"><div class="ex-label">Misol 2</div><p>y' = -2xy: dy/y = -2x dx → ln|y| = -x²+C → y = Ae^(-x²)</p></div>` },
+
+  { id:95, topic:"dt", title:"Bir jinsli differensial tenglamalar (takror).",
+    sol:`<p>y' = f(y/x) → v = y/x almashtirish:</p>
+    <div class="formula">y = vx → y' = v + xv'
+v + xv' = f(v) → xv' = f(v)-v
+dv/(f(v)-v) = dx/x  → o'zgaruvchilari ajraladigan</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y' = y²/x²+1: v=y/x → v+xv' = v²+1 → xv' = v²-v+1<br>Keyinchalik ajralgan forma yechiladi</p></div>` },
+
+  { id:96, topic:"dt", title:"Birinchi tartibli chiziqli DT (takror).",
+    sol:`<p>y' + P(x)y = Q(x)</p>
+    <div class="formula">Integrallovchi omil: μ = e^(∫P dx)
+
+(μy)' = μQ → μy = ∫μQ dx + C
+
+Yechim: y = e^(-∫P dx)[∫Q·e^(∫P dx)dx + C]</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y' + y/x = x: μ=x, (xy)'=x² → xy=x³/3+C → y=x²/3+C/x</p></div>` },
+
+  { id:97, topic:"dt", title:"Bernulli tenglamasi (takror).",
+    sol:`<p>y' + P(x)y = Q(x)yⁿ (n≠0,1)</p>
+    <div class="formula">z = y^(1-n) almashtirish:
+z' = (1-n)y^(-n)y'
+z' + (1-n)P(x)z = (1-n)Q(x)  ← chiziqli!</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y'+y=y³ (n=3): z=y^(-2), z'=-2y^(-3)y'<br>z'-2z=-2 → (ze^(-2x))' = -2e^(-2x)<br>z = Ce^(2x)+1 → y=1/√(Ce^(2x)+1)</p></div>` },
+
+  { id:98, topic:"dt", title:"To'la differensial tenglama (takror).",
+    sol:`<p>M dx + N dy = 0, agar ∂M/∂y = ∂N/∂x:</p>
+    <div class="formula">U(x,y) = ∫M dx + φ(y) toping
+∂U/∂y = N bo'lishi uchun φ(y) aniqlang
+Yechim: U(x,y) = C</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>(y+e^x)dx + x·dy = 0: ∂M/∂y=1=∂N/∂x ✓<br>U=∫(y+eˣ)dx = xy+eˣ+φ(y)<br>∂U/∂y = x = N=x ✓ → φ(y)=const<br>Yechim: xy+eˣ = C</p></div>` },
+
+  { id:99, topic:"dt", title:"O'zgarmas koeffisientli 2-tartibli bir jinsli DT (takror).",
+    sol:`<p>y'' + py' + qy = 0</p>
+    <div class="formula">k² + pk + q = 0 xarakteristik tenglama
+
+k₁≠k₂, haqiqiy: y = C₁e^(k₁x) + C₂e^(k₂x)
+k₁=k₂=k: y = (C₁+C₂x)eᵏˣ
+k=α±βi: y = eᵅˣ(C₁cosβx + C₂sinβx)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y''+4y=0: k²+4=0 → k=±2i (α=0,β=2)<br>y = C₁cos(2x)+C₂sin(2x)</p></div>` },
+
+  { id:100, topic:"dt", title:"O'zgarmas koeffisientli 2-tartibli bir jinsli bo'lmagan DT (takror).",
+    sol:`<p>y'' + py' + qy = f(x)</p>
+    <div class="formula">Umumiy yechim: y = yₕ + yₚ
+
+f(x) = Pₙ(x)eᵅˣ holatida:
+yₚ = xˢQₙ(x)eᵅˣ
+s = {0, agar α xarakteristik ildiz emas
+     1, agar α oddiy ildiz
+     2, agar α ikkilangan ildiz}
+
+f(x) = eᵅˣ(Pₙ(x)cosβx+Qₘ(x)sinβx):
+yₚ = xˢeᵅˣ(Rₗ(x)cosβx+Sₗ(x)sinβx)</div>
+    <div class="example-box"><div class="ex-label">Misol</div><p>y''+y=sin(x): k=±i, β=1 → rezonans → s=1<br>yₚ = x(Acos(x)+Bsin(x)) → A=-1/2, B=0<br>y = C₁cos(x)+C₂sin(x) - (x/2)cos(x)</p></div>` },
+];
+
+// Assign topic labels
+const topicNames = {
+  integral: "Integral hisoblar",
+  dt: "Differensial tenglamalar",
+  qator: "Qatorlar",
+  kop: "Ko'p o'zgaruvchili funksiyalar",
+  karrali: "Karrali integrallar"
+};
+
+function buildUI() {
+  const container = document.getElementById('mainContent');
+  const groups = {};
+  questions.forEach(q => {
+    if (!groups[q.topic]) groups[q.topic] = [];
+    groups[q.topic].push(q);
+  });
+
+  Object.entries(groups).forEach(([topic, qs]) => {
+    const div = document.createElement('div');
+    div.className = 'topic-group';
+    div.dataset.topic = topic;
+    div.innerHTML = `<div class="topic-header"><h2>${topicNames[topic]||topic}</h2><div class="topic-line"></div></div>`;
+    qs.forEach(q => {
+      const card = document.createElement('div');
+      card.className = 'q-card';
+      card.dataset.id = q.id;
+      card.dataset.topic = q.topic;
+      card.dataset.title = q.title.toLowerCase();
+      card.innerHTML = `
+        <div class="q-header" onclick="toggleCard(this.parentElement)">
+          <span class="q-num">#${String(q.id).padStart(3,'0')}</span>
+          <span class="q-title">${q.title}</span>
+          <span class="q-arrow">›</span>
+        </div>
+        <div class="q-solution">
+          <div class="intro">📖 Yechim</div>
+          <div class="sol-block">${q.sol}</div>
+        </div>`;
+      div.appendChild(card);
+    });
+    container.appendChild(div);
+  });
+}
+
+function toggleCard(card) {
+  card.classList.toggle('open');
+  updateProgress();
+}
+
+function updateProgress() {
+  const open = document.querySelectorAll('.q-card.open').length;
+  const total = document.querySelectorAll('.q-card:not(.hidden)').length;
+  document.getElementById('progressFill').style.width = total ? (open/total*100)+'%' : '0%';
+}
+
+// Search & filter
+let currentFilter = 'all';
+
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('filterBtns').addEventListener('click', e => {
+  if (e.target.classList.contains('filter-btn')) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    currentFilter = e.target.dataset.topic;
+    applyFilters();
+  }
+});
+
+function applyFilters() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  let visible = 0;
+  document.querySelectorAll('.q-card').forEach(card => {
+    const matchTopic = currentFilter === 'all' || card.dataset.topic === currentFilter;
+    const matchSearch = !query || card.dataset.title.includes(query) || card.dataset.id.includes(query);
+    const show = matchTopic && matchSearch;
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+  document.getElementById('visibleCount').textContent = visible;
+
+  // Show/hide topic groups
+  document.querySelectorAll('.topic-group').forEach(g => {
+    const hasVisible = [...g.querySelectorAll('.q-card')].some(c => !c.classList.contains('hidden'));
+    g.style.display = hasVisible ? '' : 'none';
+  });
+}
+
+// Scroll top button
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scrollTop');
+  btn.classList.toggle('visible', window.scrollY > 400);
+});
+
+buildUI();
+</script>
+</body>
+</html>
