@@ -3,3 +3,4 @@
 __pycache__/
 output/preview_*.png
 __pycache__/
+output/*_preview_*.mp4
