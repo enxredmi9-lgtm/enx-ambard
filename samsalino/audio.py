@@ -14,11 +14,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, ".cache", "tts")
 MODELS = os.path.join(HERE, ".models")
 
-EDGE_VOICE = "en-US-GuyNeural"
-EDGE_RATE = "-12%"      # slightly slow, dramatic
-EDGE_PITCH = "-6Hz"
+# Per-language narrator settings: dramatic male voice, slightly slow.
+VOICES = {
+    "en": dict(edge="en-US-GuyNeural", rate="-12%", pitch="-6Hz",
+               kokoro_lang="en-us", espeak="en-us+m3"),
+    "uz": dict(edge="uz-UZ-SardorNeural", rate="-8%", pitch="-4Hz",
+               kokoro_lang="uz", espeak="uz"),
+}
 KOKORO_VOICE = "am_michael"
 KOKORO_SPEED = 0.88
+LANG = "en"
 KOKORO_URL = ("https://github.com/thewh1teagle/kokoro-onnx/releases/download/"
               "model-files-v1.0/")
 
@@ -70,8 +75,10 @@ def _edge(text, out_mp3):
         certifi.where = lambda: os.environ["SSL_CERT_FILE"]
     import edge_tts
 
+    v = VOICES[LANG]
+
     async def run():
-        com = edge_tts.Communicate(text, EDGE_VOICE, rate=EDGE_RATE, pitch=EDGE_PITCH)
+        com = edge_tts.Communicate(text, v["edge"], rate=v["rate"], pitch=v["pitch"])
         await com.save(out_mp3)
     asyncio.run(run())
     if not os.path.exists(out_mp3) or os.path.getsize(out_mp3) == 0:
@@ -97,10 +104,26 @@ def _kokoro_model():
     return _kokoro
 
 
+# espeak-ng's Uzbek output uses a few symbols Kokoro doesn't know (or mangles).
+UZ_PHONEME_FIX = [("tS", "ʧ"), ("dZ", "ʤ"), ("ɫ", "l"), ("y", "i")]
+
+
 def _kokoro_tts(text, out_wav):
     import soundfile as sf
-    samples, sr = _kokoro_model().create(text, voice=KOKORO_VOICE,
-                                         speed=KOKORO_SPEED, lang="en-us")
+    k = _kokoro_model()
+    if LANG == "uz":
+        from kokoro_onnx.tokenizer import Tokenizer, phonemizer
+        tok = Tokenizer()  # sets up the bundled espeak-ng library
+        ph = phonemizer.phonemize(text.strip(), "uz", preserve_punctuation=True,
+                                  with_stress=True)
+        for a, b in UZ_PHONEME_FIX:
+            ph = ph.replace(a, b)
+        ph = tok.known(ph).strip()
+        samples, sr = k.create(ph, voice=KOKORO_VOICE, speed=KOKORO_SPEED,
+                               is_phonemes=True)
+    else:
+        samples, sr = k.create(text, voice=KOKORO_VOICE, speed=KOKORO_SPEED,
+                               lang=VOICES[LANG]["kokoro_lang"])
     sf.write(out_wav, samples, sr)
 
 
@@ -108,7 +131,7 @@ def _espeak(text, out_wav):
     exe = shutil.which("espeak-ng") or shutil.which("espeak")
     if not exe:
         raise RuntimeError("espeak-ng not installed")
-    subprocess.run([exe, "-v", "en-us+m3", "-s", "135", "-p", "30", "-a", "180",
+    subprocess.run([exe, "-v", VOICES[LANG]["espeak"], "-s", "135", "-p", "30", "-a", "180",
                     "-w", out_wav, text], check=True)
 
 
@@ -126,7 +149,8 @@ class Narrator:
         os.makedirs(CACHE, exist_ok=True)
 
     def _path(self, backend, text):
-        h = hashlib.sha1(f"{backend}|{EDGE_VOICE}|{KOKORO_VOICE}|{text}".encode())
+        h = hashlib.sha1(f"{backend}|{LANG}|{VOICES[LANG]['edge']}|{KOKORO_VOICE}|"
+                         f"{text}".encode())
         return os.path.join(CACHE, f"{backend}_{h.hexdigest()[:16]}"
                             + BACKENDS[backend][1])
 

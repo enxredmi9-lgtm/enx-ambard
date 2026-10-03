@@ -63,40 +63,91 @@ def stanza(start, rows):
     return out
 
 
-CHORUS = [
-    ("Boom-boom-tandir, boom-boom-tandir!", "Boom boom tandeer! Boom boom tandeer!", False),
-    ("Samsalino's finally here!", "Samsalino's... finally here!", True),
-    ("Little feet go stomp, sesame on top,", "Little feet go stomp! Sesame on top!", False),
-    ("Dance with him and never stop!", None, False),
-]
+# Each song: (subtitle, tts text or None, starts-with-a-name) per line.
+SONGS = {
+    "en": dict(
+        title=("Samsalino... Tandirino!", None),
+        chorus=[
+            ("Boom-boom-tandir, boom-boom-tandir!", "Boom boom tandeer! Boom boom tandeer!", False),
+            ("Samsalino's finally here!", "Samsalino's... finally here!", True),
+            ("Little feet go stomp, sesame on top,", "Little feet go stomp! Sesame on top!", False),
+            ("Dance with him and never stop!", None, False)],
+        verse1=[
+            ("Plovolino Kazanino,", "Plovolino... Kazanino!", True),
+            ("A flying pot, a rice machino!", "A flying pot! A rice ma-keeno!", False),
+            ("Whoosh-whoosh over rooftops high,", "Whoosh whoosh, over rooftops high!", False),
+            ("Raining carrots from the sky!", None, False)],
+        verse2=[
+            ("Dutarini Crocodini", "Dutarini... Crocodini!", True),
+            ("Wears a doppi, blue and teeny!", "Wears a doppy, blue and teeny!", False),
+            ("Tail goes clack, teeth go snap,", "Tail goes clack! Teeth go snap!", False),
+            ("Even wolves begin to clap!", None, False)],
+        verse3=[
+            ("Chaynikoni Pialoni,", "Chai-nee-koni... Pee-ah-loni!", True),
+            ("A teapot riding on a pony!", None, False),
+            ('Glug-glug-glug, it shouts "Salom!"', "Glug glug glug! It shouts, Sah-lom!", False),
+            ("Pouring tea in every home!", None, False)],
+        names=[("Samsalino!", None), ("Plovolino!", None), ("Dutarini!", None),
+               ("Chaynikoni!", "Chai-nee-koni!")],
+        together=("All together, one-two-three...", "All together! One, two, three!"),
+        boom=("BOOM-BOOM-TANDIR!", "Boom boom tandeer!"),
+        screen=dict(chorus2="BOOM-BOOM\nTANDIR!", together="ALL TOGETHER!",
+                    boom="BOOM-BOOM-\nTANDIR!", salom="SALOM!",
+                    croc="DUTARINI\nCROCODINI"),
+    ),
+    "uz": dict(
+        title=("Samsalino... Tandirino!", None),
+        chorus=[
+            ("Bum-bum-tandir, bum-bum-tandir!", "Bum bum tandir! Bum bum tandir!", False),
+            ("Samsalino keldi, qarang!", "Samsalino... keldi, qarang!", True),
+            ("Oyoqchasi tup-tup-tup,", "Oyoqchasi tup, tup, tup!", False),
+            ("Boshda kunjut, raqsga tush, hop!", "Boshda kunjut! Raqsga tush, hop!", False)],
+        verse1=[
+            ("Plovolino Kazanino,", "Plovolino... Kazanino!", True),
+            ("Uchar qozon, guruch-mashino!", "Uchar qozon, guruch mashino!", False),
+            ("Vush-vush, tomlar uzra uchar,", "Vush vush! Tomlar uzra uchar!", False),
+            ("Osmondan sabzi yog'ar!", None, False)],
+        verse2=[
+            ("Dutarini Krokodini", "Dutarini... Krokodini!", True),
+            ("Boshida ko'k do'ppi, mini!", None, False),
+            ("Dumi taq-taq, tishi shaq,", "Dumi taq taq! Tishi shaq!", False),
+            ("Bo'ri ham chalar qarsak!", None, False)],
+        verse3=[
+            ("Chaynikoni Pialoni,", "Chaynikoni... Pialoni!", True),
+            ("Choynak minar toychoqni!", None, False),
+            ('Bul-bul-bul, der: "Salom!"', "Bul bul bul! Der: Salom!", False),
+            ("Har uyga choy quyar, davom!", "Har uyga choy quyar! Davom!", False)],
+        names=[("Samsalino!", None), ("Plovolino!", None), ("Dutarini!", None),
+               ("Chaynikoni!", None)],
+        together=("Birga! Bir-ikki-uch...", "Birga! Bir, ikki, uch!"),
+        boom=("BUM-BUM-TANDIR!", "Bum bum tandir!"),
+        screen=dict(chorus2="BUM-BUM\nTANDIR!", together="HAMMA BIRGA!",
+                    boom="BUM-BUM-\nTANDIR!", salom="SALOM!",
+                    croc="DUTARINI\nKROKODINI"),
+    ),
+}
 
-LYRICS = (
-    [L(0.2, 2.2, "Samsalino... Tandirino!", "Samsalino... Tandirino!", echo=True,
-       gain=1.0, sub_t1=3.0)]
-    + stanza(3, CHORUS)
-    + stanza(13, [
-        ("Plovolino Kazanino,", "Plovolino... Kazanino!", True),
-        ("A flying pot, a rice machino!", "A flying pot! A rice ma-keeno!", False),
-        ("Whoosh-whoosh over rooftops high,", "Whoosh whoosh, over rooftops high!", False),
-        ("Raining carrots from the sky!", None, False)])
-    + stanza(23, [
-        ("Dutarini Crocodini", "Dutarini... Crocodini!", True),
-        ("Wears a doppi, blue and teeny!", "Wears a doppy, blue and teeny!", False),
-        ("Tail goes clack, teeth go snap,", "Tail goes clack! Teeth go snap!", False),
-        ("Even wolves begin to clap!", None, False)])
-    + stanza(33, [
-        ("Chaynikoni Pialoni,", "Chai-nee-koni... Pee-ah-loni!", True),
-        ("A teapot riding on a pony!", None, False),
-        ('Glug-glug-glug, it shouts "Salom!"', "Glug glug glug! It shouts, Sah-lom!", False),
-        ("Pouring tea in every home!", None, False)])
-    + stanza(43, CHORUS)
-    + [L(53.0, 54.3, "Samsalino!", pause=0.15),
-       L(54.3, 55.5, "Plovolino!", pause=0.12),
-       L(55.5, 56.5, "Dutarini!", pause=0.1),
-       L(56.5, 57.4, "Chaynikoni!", "Chai-nee-koni!", pause=0.08),
-       L(57.4, 59.0, "All together, one-two-three...", "All together! One, two, three!"),
-       L(59.0, 60.0, "BOOM-BOOM-TANDIR!", "Boom boom tandeer!", gain=1.0, echo=True)]
-)
+
+def build_lyrics(song):
+    n = song["names"]
+    return (
+        [L(0.2, 2.2, song["title"][0], song["title"][1], echo=True, sub_t1=3.0)]
+        + stanza(3, song["chorus"])
+        + stanza(13, song["verse1"])
+        + stanza(23, song["verse2"])
+        + stanza(33, song["verse3"])
+        + stanza(43, song["chorus"])
+        + [L(53.0, 54.3, *n[0], pause=0.15),
+           L(54.3, 55.5, *n[1], pause=0.12),
+           L(55.5, 56.5, *n[2], pause=0.1),
+           L(56.5, 57.4, *n[3], pause=0.08),
+           L(57.4, 59.0, *song["together"]),
+           L(59.0, 60.0, *song["boom"], echo=True)]
+    )
+
+
+SONG = SONGS["en"]
+LYRICS = build_lyrics(SONG)
 
 FINALE_SLOTS = [(53.0, 54.3, "samsa", "SAMSALINO!"), (54.3, 55.5, "kazan", "PLOVOLINO!"),
                 (55.5, 56.5, "croc", "DUTARINI!"), (56.5, 57.4, "tea", "CHAYNIKONI!")]
@@ -447,7 +498,7 @@ def scene_verse2(fr, t):
             img = text_img(sym, 90, col, stroke=6, shadow=False, path=SYMBOL_FONT)
             paste(fr, img, cx - 60 + off + 40 * math.sin(dt * 5 + k), 1080 - dt * 330,
                   1, 1, 15 * math.sin(dt * 4), max(0, 1 - dt / 1.6))
-    name_card(fr, t, 23.0, "DUTARINI\nCROCODINI", (90, 215, 90, 255))
+    name_card(fr, t, 23.0, SONG["screen"]["croc"], (90, 215, 90, 255))
 
 
 PONY_SC = 0.85
@@ -508,7 +559,7 @@ def scene_verse3(fr, t):
     # "SALOM!" speech bubble
     if 38.0 <= t < 40.7:
         kk = ease_out_back((t - 38.0) / 0.3)
-        bub = speech_bubble("SALOM!")
+        bub = speech_bubble(SONG["screen"]["salom"])
         paste(fr, bub, min(tcx + 230, W - 230), tcy - 260, kk * (1 + 0.06 * pulse(t)),
               kk * (1 + 0.06 * pulse(t)), -5)
     name_card(fr, t, 33.0, "CHAYNIKONI\nPIALONI", (80, 160, 255, 255))
@@ -567,7 +618,7 @@ def scene_chorus2(fr, t):
     # teapot on pony (right)
     paste_bottom(fr, S["tea_combo"], 850, 1530 - hop(t) * 90, 0.56 * sx, 0.56 * sy,
                  6 * math.sin(math.pi * (i + p) + 0.7))
-    name_card(fr, t, 43.0, "BOOM-BOOM\nTANDIR!", (255, 220, 50, 255))
+    name_card(fr, t, 43.0, SONG["screen"]["chorus2"], (255, 220, 50, 255))
 
 
 def finale_sprite(key, t):
@@ -611,7 +662,7 @@ def scene_finale(fr, t):
         paste_bottom(fr, spr, x + ox, 1500 - lift + oy, sc * sx, sc * sy,
                      10 * math.sin(math.pi * (i + p) + n))
     if t < 59.0:
-        paste(fr, text_img("ALL TOGETHER!", 120, (255, 255, 255, 255), stroke=14),
+        paste(fr, text_img(SONG["screen"]["together"], 120, (255, 255, 255, 255), stroke=14),
               W / 2 + ox, 330, 1 + 0.08 * pulse(t), 1 + 0.08 * pulse(t),
               4 * math.sin(t * 9))
         for num, nt in (("1", 58.0), ("2", 58.35), ("3", 58.7)):
@@ -621,7 +672,7 @@ def scene_finale(fr, t):
                       W / 2, 720, kk, kk, -8 + 16 * (num == "2"))
     else:
         k = t - 59.0
-        bimg = text_img("BOOM-BOOM-\nTANDIR!", 150, (255, 235, 50, 255), stroke=18)
+        bimg = text_img(SONG["screen"]["boom"], 150, (255, 235, 50, 255), stroke=18)
         z = 0.6 + 0.9 * ease_out_back(min(1, k / 0.25)) + 0.15 * k
         z = min(z, W * 0.96 / bimg.width)
         paste(fr, bimg, W / 2 + ox, 560 + oy, z, z, 6 * math.sin(t * 25))
@@ -681,12 +732,20 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tts", default="auto", choices=["auto", "edge", "kokoro", "espeak"])
     ap.add_argument("--workers", type=int, default=os.cpu_count() or 2)
-    ap.add_argument("--out", default=os.path.join(HERE, "output", "samsalino.mp4"))
+    ap.add_argument("--lang", default="en", choices=sorted(SONGS),
+                    help="song language: en (English) or uz (Uzbek)")
+    ap.add_argument("--out", default=None,
+                    help="default: output/samsalino.mp4 (en), output/samsalino_uz.mp4 (uz)")
     ap.add_argument("--assets", default=os.path.join(HERE, "assets"))
     ap.add_argument("--preview", type=float, nargs="*",
                     help="only write PNG stills at these times (seconds)")
     a = ap.parse_args()
 
+    global SONG, LYRICS
+    SONG, LYRICS = SONGS[a.lang], build_lyrics(SONGS[a.lang])
+    audio.LANG = a.lang
+    a.out = a.out or os.path.join(
+        HERE, "output", "samsalino.mp4" if a.lang == "en" else f"samsalino_{a.lang}.mp4")
     t_start = time.time()
     assets = a.assets if os.path.isdir(a.assets) else None
     print(f"Drawing characters{' (using PNGs from ' + assets + ')' if assets else ''} ...")

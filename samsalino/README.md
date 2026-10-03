@@ -17,10 +17,21 @@ Needs Python 3.10+ and `ffmpeg` on PATH.
 ```bash
 pip install -r requirements.txt
 python make_video.py              # -> output/samsalino.mp4 (~5 min on 4 cores)
+python make_video.py --lang uz    # Uzbek version -> output/samsalino_uz.mp4
 python make_video.py --preview 5 30 55   # quick PNG stills instead
 ```
 
-Options: `--tts auto|edge|kokoro|espeak`, `--workers N`, `--out PATH`, `--assets DIR`.
+Options: `--lang en|uz`, `--tts auto|edge|kokoro|espeak`, `--workers N`,
+`--out PATH`, `--assets DIR`.
+
+## Languages
+
+- **en**: English lyrics. edge-tts voice `en-US-GuyNeural`.
+- **uz**: Uzbek lyrics (Latin script) with Uzbek subtitles and on-screen text.
+  edge-tts voice `uz-UZ-SardorNeural`. When edge-tts is unreachable, Kokoro
+  speaks Uzbek phonemes that espeak-ng generates from the text.
+
+Lyrics for both languages are in `SONGS` in `make_video.py`.
 
 ## How it works
 
