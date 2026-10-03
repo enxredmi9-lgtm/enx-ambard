@@ -1,0 +1,6 @@
+numpy
+pillow
+edge-tts
+# offline narrator fallback when edge-tts can't reach Microsoft's service
+kokoro-onnx
+soundfile

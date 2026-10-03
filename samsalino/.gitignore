@@ -1,0 +1,5 @@
+.models/
+.cache/
+__pycache__/
+output/preview_*.png
+__pycache__/
