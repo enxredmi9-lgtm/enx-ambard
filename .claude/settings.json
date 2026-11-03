@@ -8,6 +8,7 @@
     }
   },
   "enabledPlugins": {
-    "claude-mem@thedotmack": true
+    "claude-mem@thedotmack": true,
+    "claude-mem-cowork@thedotmack": true
   }
 }
